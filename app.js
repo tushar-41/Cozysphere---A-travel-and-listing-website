@@ -25,6 +25,9 @@ const Listing = require("./models/listing.js");
 // const dbUrl = "mongodb://127.0.0.1:27017/listing";
 const dbUrl = process.env.ATLASDB_URL;
 
+//Port
+const PORT = process.env.PORT || 8080;
+
 main()
   .then(() => {
     console.log("connected to DB");
@@ -52,7 +55,7 @@ const store = MongoStore.create({
   touchAfter: 24 * 3600,
 });
 
-store.on("error", () => {
+store.on("error", (err) => {
   console.log("Error in MONGO SESSION STORE", err);
 });
 
@@ -110,6 +113,6 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render("error.ejs", { err });
 });
 
-app.listen(8080, () => {
-  console.log(`server is running on port number http://localhost:8080`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`server is running on port ${PORT}`);
 });
