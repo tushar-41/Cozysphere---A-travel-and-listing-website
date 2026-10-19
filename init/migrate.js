@@ -1,10 +1,11 @@
 // Non-destructive backfill: gives pre-existing listings a category and guest capacity.
-// Run once with: node init/migrate.js
+// Run once with: node init/migrate.js (uses ATLASDB_URL from .env)
+require("dotenv").config();
 const mongoose = require("mongoose");
 const Listing = require("../models/listing.js");
 const { inferCategory } = require("../utils/categories.js");
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/listing";
+const MONGO_URL = process.env.ATLASDB_URL;
 
 (async () => {
   await mongoose.connect(MONGO_URL);

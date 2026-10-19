@@ -25,8 +25,11 @@ const listingController = require("./controllers/listing.js");
 const wrapAsync = require("./utils/wrapAsync.js");
 const Listing = require("./models/listing.js");
 
-const dbUrl = "mongodb://127.0.0.1:27017/listing";
-// const dbUrl = process.env.ATLASDB_URL;
+// MongoDB Atlas connection string, set in .env locally and in the Render environment in production.
+const dbUrl = process.env.ATLASDB_URL;
+if (!dbUrl) {
+  throw new Error("ATLASDB_URL is not set. Add your MongoDB Atlas connection string to the environment.");
+}
 
 //Port
 const PORT = process.env.PORT || 8080;
@@ -49,6 +52,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
+
+// Defaults so templates (navbar/flash) never hit undefined vars, even if an error fires before session setup.
+app.use((req, res, next) => {
+  res.locals.success = [];
+  res.locals.error = [];
+  res.locals.currUser = undefined;
+  next();
+});
 
 const store = MongoStore.create({
   mongoUrl: dbUrl,

@@ -1,2 +1,4 @@
 .env
 node_modules/
+# db backups contain user data and password hashes
+backups/
