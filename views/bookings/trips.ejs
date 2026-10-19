@@ -1,0 +1,20 @@
+<% layout("/layouts/boilerplate.ejs") %>
+<div class="page-head">
+  <h1>My <span class="grad-text">trips</span></h1>
+  <div class="seg"><a class="on" href="/bookings">Travelling</a><a href="/bookings/hosting">Hosting</a></div>
+</div>
+
+<% const sections = [["Upcoming", upcoming], ["Past stays", past], ["Cancelled", cancelled]]; %>
+<% if (!upcoming.length && !past.length && !cancelled.length) { %>
+  <div class="empty panel reveal">
+    <div class="ico"><i class="fa-solid fa-suitcase-rolling"></i></div>
+    <h3>No trips yet</h3>
+    <p>When you book a stay it will show up here.</p>
+    <a class="btn btn-grad" href="/listings">Explore stays</a>
+  </div>
+<% } else { %>
+  <% for (const [title, items] of sections) { if (!items.length) continue; %>
+    <h3 class="section-title"><%= title %> <small style="color:var(--muted);font-size:.9rem">(<%= items.length %>)</small></h3>
+    <% for (const b of items) { %><%- include("_card", { b, from: "trips" }) %><% } %>
+  <% } %>
+<% } %>

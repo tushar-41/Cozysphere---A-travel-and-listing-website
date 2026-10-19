@@ -1,0 +1,29 @@
+<% layout("/layouts/boilerplate.ejs") %>
+<div class="page-head">
+  <h1>Your <span class="grad-text">hosting</span></h1>
+  <div class="seg"><a href="/bookings">Travelling</a><a class="on" href="/bookings/hosting">Hosting</a></div>
+</div>
+
+<div class="stats">
+  <div class="stat reveal"><b><%= active.length %></b><span>Upcoming reservations</span></div>
+  <div class="stat reveal" style="--d:60ms"><b>&#8377;<%= earnings.toLocaleString("en-IN") %></b><span>Total earned (before GST)</span></div>
+  <div class="stat reveal" style="--d:120ms"><b><%= history.length %></b><span>Past or cancelled</span></div>
+</div>
+
+<% if (!active.length && !history.length) { %>
+  <div class="empty panel reveal">
+    <div class="ico"><i class="fa-solid fa-house-circle-check"></i></div>
+    <h3>No reservations yet</h3>
+    <p>Reservations on your listings will appear here.</p>
+    <a class="btn btn-grad" href="/listings/new">Host a home</a>
+  </div>
+<% } %>
+
+<% if (active.length) { %>
+  <h3 class="section-title">Upcoming</h3>
+  <% for (const b of active) { %><%- include("_card", { b, from: "hosting", showGuest: true }) %><% } %>
+<% } %>
+<% if (history.length) { %>
+  <h3 class="section-title">History</h3>
+  <% for (const b of history) { %><%- include("_card", { b, from: "hosting", showGuest: true }) %><% } %>
+<% } %>

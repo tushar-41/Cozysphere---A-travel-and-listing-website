@@ -1,79 +1,149 @@
 <% layout("/layouts/boilerplate.ejs") %>
-<body>
-    <div class="row mt-3">
-        <div class="col-8 offset-4">
-    <h3><b><b><%= list.title %></b></b></h3>
-    <div class="card col-5 list-card">
-        <img src="<%=list.image.url%>" class="card-img-top card-show" alt="listing_image">
-        <div class="card-body">
-          <p class="card-text"><i>Owned by <%= list.owner.username %></i></p>
-          <p class="card-text"><%= list.description %></p>
-          <p class="card-text">&#8377; <%= list.price.toLocaleString('en-IN') %>/night</p>
-          <p class="card-text"><%= list.location %></p>
-          <p class="card-text"><%= list.country %></p>
-        </div>
-      </div>
-      <% if(currUser && list.owner._id.equals(currUser._id)){ %>
-   <div class="row">
-        <div class="mb-3 col-md-4">
-        <a type="button" class="btn btn-primary mb-2" href="/listings/<%= list._id %>/edit">Edit this listing</a>
-         </div>
-         <div class="mb-3 col-md-8">
-        <form method="POST" action="/listings/<%=list.id%>?_method=DELETE">
-          <button type="submit" type="button" class="btn btn-danger mb-2">DELETE</button>
-        </form>
-    </div>
+<% const isOwner = currUser && list.owner && list.owner._id.equals(currUser._id);
+   const hostName = list.owner ? list.owner.username : "Cozysphere host"; %>
+
+<a class="crumb" href="/listings"><i class="fa-solid fa-arrow-left"></i> Back to all stays</a>
+
+<h1 class="show-title"><%= list.title %></h1>
+<div class="show-meta">
+  <span><i class="fa-solid fa-location-dot"></i><%= list.location %>, <%= list.country %></span>
+  <% if (list.reviews.length) { %><span><i class="fa-solid fa-star" style="color:#ffc94d"></i><b><%= avgRating.toFixed(1) %></b> · <%= list.reviews.length %> review<%= list.reviews.length === 1 ? "" : "s" %></span><% } %>
+  <% if (category) { %><span><i class="<%= category.icon %>"></i><%= category.label %></span><% } %>
 </div>
-<% } %>
-<div class="col-8">
-  <hr>
-  <% if(currUser) {%>
-  <h4>Leave a review</h4>
-  <form method="POST" action="/listings/<%= list._id %>/reviews" novalidate class="needs-validation">
-    <label for="rating" class="form-label"><h4>Rating</h4></label>
-    <fieldset class="starability-slot">
-      <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
-      <input type="radio" id="first-rate1" name="review[rating]" value="1" />
-      <label for="first-rate1" title="Terrible">1 star</label>
-      <input type="radio" id="first-rate2" name="review[rating]" value="2" />
-      <label for="first-rate2" title="Not good">2 stars</label>
-      <input type="radio" id="first-rate3" name="review[rating]" value="3" />
-      <label for="first-rate3" title="Average">3 stars</label>
-      <input type="radio" id="first-rate4" name="review[rating]" value="4" />
-      <label for="first-rate4" title="Very good">4 stars</label>
-      <input type="radio" id="first-rate5" name="review[rating]" value="5" />
-      <label for="first-rate5" title="Amazing">5 stars</label>
-    </fieldset>
+
+<div class="show-hero">
+  <img src="<%= list.image && list.image.url %>" alt="<%= list.title %>">
+</div>
+
+<div class="row g-4 mt-1">
+  <div class="col-lg-7 col-xl-8">
+    <div class="host-row reveal">
+      <div class="avatar"><%= hostName.charAt(0).toUpperCase() %></div>
+      <div>
+        <b>Hosted by <%= hostName %></b><br>
+        <small style="color:var(--muted)">Up to <%= list.maxGuests || 4 %> guests</small>
+      </div>
+    </div>
+
+    <div class="facts">
+      <div class="fact reveal"><i class="fa-solid fa-user-group"></i><b><%= list.maxGuests || 4 %> guests</b><span>Max capacity</span></div>
+      <div class="fact reveal" style="--d:60ms"><i class="fa-solid fa-indian-rupee-sign"></i><b><%= list.price.toLocaleString("en-IN") %></b><span>Per night</span></div>
+      <div class="fact reveal" style="--d:120ms"><i class="fa-solid fa-calendar-check"></i><b>Instant booking</b><span>Confirmed right away</span></div>
+    </div>
+
+    <h3 class="section-title">About this place</h3>
+    <p class="desc"><%= list.description %></p>
+
+    <% if (isOwner) { %>
+      <div class="d-flex gap-2 flex-wrap mt-4">
+        <a class="btn btn-ghost" href="/listings/<%= list._id %>/edit"><i class="fa-solid fa-pen me-1"></i> Edit listing</a>
+        <a class="btn btn-ghost" href="/bookings/hosting"><i class="fa-solid fa-calendar-days me-1"></i> View reservations</a>
+        <form method="POST" action="/listings/<%= list.id %>?_method=DELETE" data-confirm="Delete this listing and all its bookings?">
+          <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash me-1"></i> Delete</button>
+        </form>
+      </div>
+    <% } %>
   </div>
-    <div class="mb-3">
-      <label for="comment">Comments</label>
-      <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control" required></textarea>
-      <div class="invalid-feedback">
-        Please add some comment on review!
-      </div>
-    </div>
-    <button class="btn btn-outline-dark mt-2" type="submit">Submit</button>
-  </form>
-  <% } %>
-  <% if(list.reviews.length>0){%>
-  <hr/>
-  <p><b>ALL REVIEWS</b></p>
-  <div class="row">
-  <% for(review of list.reviews){%>
-    <div class="card col-6 mb-3">
-      <div class="card-body">
-        <h5 class="card-title">@<%= review.author.username %></h5>
-        <p class="starability-result" data-rating="<%= review.rating %>"></p>
-        <p class="card-text"><%=review.comment%></p>
-        <form class="mb-2" method="POST" action="/listings/<%= list._id %>/reviews/<%= review._id %>?_method=DELETE">
-          <button class="btn btn-sm btn-dark">DELETE</button>
+
+  <!-- Booking widget -->
+  <aside class="col-lg-5 col-xl-4">
+    <div class="book-card panel reveal" id="bookCard"
+         data-price="<%= list.price %>" data-max-guests="<%= list.maxGuests || 4 %>"
+         data-booked='<%= JSON.stringify(bookedRanges) %>'>
+      <div class="price">&#8377;<%= list.price.toLocaleString("en-IN") %> <small>/ night</small></div>
+
+      <% if (isOwner) { %>
+        <p class="fine mt-3" style="text-align:left">This is your listing. Track upcoming stays under <a href="/bookings/hosting">Hosting</a>.</p>
+      <% } else { %>
+        <form method="POST" action="/listings/<%= list._id %>/bookings" id="bookForm" novalidate>
+          <div class="date-grid">
+            <div>
+              <label class="form-label" for="bCheckIn">Check in</label>
+              <input class="form-control" type="date" id="bCheckIn" name="booking[checkIn]" min="<%= today %>" required>
+            </div>
+            <div>
+              <label class="form-label" for="bCheckOut">Check out</label>
+              <input class="form-control" type="date" id="bCheckOut" name="booking[checkOut]" min="<%= today %>" required>
+            </div>
+          </div>
+          <label class="form-label" for="bGuests">Guests</label>
+          <select class="form-select mb-2" id="bGuests" name="booking[guests]">
+            <% for (let g = 1; g <= (list.maxGuests || 4); g++) { %><option value="<%= g %>"><%= g %> guest<%= g > 1 ? "s" : "" %></option><% } %>
+          </select>
+
+          <% if (bookedRanges.length) { %>
+            <div style="font-size:.78rem;color:var(--muted)">Already booked:</div>
+            <div class="busy-list mb-2">
+              <% for (const r of bookedRanges) { %><span><%= r.from %> → <%= r.to %></span><% } %>
+            </div>
+          <% } %>
+
+          <div class="book-warn" id="bookWarn"></div>
+
+          <div class="breakdown" id="breakdown">
+            <div class="row-l"><span id="bkLine"></span><span id="bkSub"></span></div>
+            <div class="row-l"><span>GST (18%)</span><span id="bkTax"></span></div>
+            <div class="row-l total"><span>Total</span><span id="bkTotal"></span></div>
+          </div>
+
+          <% if (currUser) { %>
+            <button class="btn btn-grad w-100 mt-2" type="submit" id="bookBtn" disabled><i class="fa-solid fa-lock-open me-1"></i> Reserve</button>
+            <p class="fine">You will not be charged yet — pay at the property.</p>
+          <% } else { %>
+            <a class="btn btn-grad w-100 mt-2" href="/login?returnTo=/listings/<%= list._id %>"><i class="fa-solid fa-right-to-bracket me-1"></i> Log in to reserve</a>
+          <% } %>
         </form>
-      </div>  
+      <% } %>
     </div>
-<%}%>
+  </aside>
 </div>
-<%}%>
-</div>
-</div>
-</div>
-</body>
+
+<!-- Reviews -->
+<section class="mt-5">
+  <% if (currUser) { %>
+    <h3 class="section-title">Leave a review</h3>
+    <form method="POST" action="/listings/<%= list._id %>/reviews" novalidate class="needs-validation panel p-4 reveal">
+      <label class="form-label">Rating</label>
+      <fieldset class="starability-slot">
+        <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+        <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+        <label for="first-rate1" title="Terrible">1 star</label>
+        <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+        <label for="first-rate2" title="Not good">2 stars</label>
+        <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+        <label for="first-rate3" title="Average">3 stars</label>
+        <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+        <label for="first-rate4" title="Very good">4 stars</label>
+        <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+        <label for="first-rate5" title="Amazing">5 stars</label>
+      </fieldset>
+      <label class="form-label" for="comment">Comments</label>
+      <textarea name="review[comment]" id="comment" rows="4" class="form-control" required placeholder="How was your stay?"></textarea>
+      <div class="invalid-feedback">Please add some comment on review!</div>
+      <button class="btn btn-grad mt-3" type="submit">Submit review</button>
+    </form>
+  <% } %>
+
+  <% if (list.reviews.length > 0) { %>
+    <h3 class="section-title">What guests say</h3>
+    <div class="row g-3">
+      <% list.reviews.forEach((review, i) => { %>
+        <div class="col-md-6 reveal" style="--d: <%= (i % 4) * 70 %>ms">
+          <div class="review-card">
+            <div class="head">
+              <div class="avatar"><%= (review.author ? review.author.username : "?").charAt(0).toUpperCase() %></div>
+              <div><b>@<%= review.author ? review.author.username : "guest" %></b>
+                <p class="starability-result" data-rating="<%= review.rating %>" style="margin:0"></p></div>
+            </div>
+            <p><%= review.comment %></p>
+            <% if (currUser && review.author && review.author._id.equals(currUser._id)) { %>
+              <form method="POST" action="/listings/<%= list._id %>/reviews/<%= review._id %>?_method=DELETE">
+                <button class="btn btn-sm btn-ghost">Delete</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>

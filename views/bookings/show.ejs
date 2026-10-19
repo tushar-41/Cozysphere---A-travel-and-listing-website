@@ -1,0 +1,40 @@
+<% layout("/layouts/boilerplate.ejs") %>
+<% const fmt = (d) => d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+   const cancelled = booking.status === "cancelled"; %>
+<a class="crumb" href="/bookings"><i class="fa-solid fa-arrow-left"></i> All trips</a>
+
+<div class="ticket panel reveal">
+  <div class="top <%= cancelled ? 'cancelled' : '' %>">
+    <% if (cancelled) { %>
+      <div class="ico grad-text" style="font-size:3.2rem"><i class="fa-solid fa-circle-xmark"></i></div>
+      <h2>Booking cancelled</h2>
+    <% } else { %>
+      <svg class="check" viewBox="0 0 74 74"><circle cx="37" cy="37" r="30"/><path d="M24 38 L33 47 L51 27"/></svg>
+      <h2>You are all set!</h2>
+    <% } %>
+    <div style="color:var(--muted)">Reference #<%= booking._id.toString().slice(-8).toUpperCase() %></div>
+  </div>
+  <div class="body">
+    <h4 class="mb-3"><a href="/listings/<%= booking.listing._id %>" style="color:var(--text)"><%= booking.listing.title %></a></h4>
+    <div class="t-grid">
+      <div><small>Check in</small><b><%= fmt(booking.checkIn) %></b></div>
+      <div><small>Check out</small><b><%= fmt(booking.checkOut) %></b></div>
+      <div><small>Guests</small><b><%= booking.guests %></b></div>
+      <div><small>Where</small><b><%= booking.listing.location %>, <%= booking.listing.country %></b></div>
+      <div><small>Booked by</small><b><%= booking.guest.username %></b></div>
+    </div>
+    <div class="t-lines">
+      <div class="row-l"><span>&#8377;<%= booking.pricePerNight.toLocaleString("en-IN") %> × <%= booking.nights %> night<%= booking.nights > 1 ? "s" : "" %></span><span>&#8377;<%= booking.subtotal.toLocaleString("en-IN") %></span></div>
+      <div class="row-l"><span>GST (18%)</span><span>&#8377;<%= booking.tax.toLocaleString("en-IN") %></span></div>
+      <div class="row-l total"><span>Total</span><span>&#8377;<%= booking.totalPrice.toLocaleString("en-IN") %></span></div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap mt-4">
+      <a class="btn btn-ghost" href="/bookings">My trips</a>
+      <% if (canCancel) { %>
+        <form method="POST" action="/bookings/<%= booking._id %>?_method=DELETE" data-confirm="Cancel this booking?">
+          <button class="btn btn-danger" type="submit">Cancel booking</button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+</div>

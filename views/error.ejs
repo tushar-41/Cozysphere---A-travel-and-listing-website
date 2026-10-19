@@ -1,6 +1,7 @@
 <% layout("/layouts/boilerplate.ejs") %>
-<div class="row">
-<div class="alert alert-danger" role="alert">
-    <h4 class="alert-heading"><%= err.message %></h4>
-  </div>
+<div class="err-box panel reveal">
+  <div class="code grad-text"><%= err.statusCode || 500 %></div>
+  <h3 class="mt-2"><%= err.message %></h3>
+  <p style="color:var(--muted)">Something went off the map. Let us get you back to somewhere cozy.</p>
+  <a class="btn btn-grad" href="/listings">Back to stays</a>
 </div>

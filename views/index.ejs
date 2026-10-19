@@ -1,135 +1,115 @@
 <% layout("/layouts/boilerplate.ejs") %>
-<style>
-    #filters{
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-    .filter{
-        text-align: center;
-        margin-right: 2rem;
-        margin-bottom: 1rem;
-        margin-top: 1rem;
-        opacity: 0.7;
-    }
-    .filter:hover{
-        opacity: 1;
-        cursor: pointer;
-    }
+<% const f = filters;
+   const activeTags = [];
+   if (f.q) activeTags.push(`“${f.q}”`);
+   if (f.category) activeTags.push((categories.find(c => c.slug === f.category) || {}).label);
+   if (f.guests) activeTags.push(`${f.guests}+ guests`);
+   if (f.minPrice !== "") activeTags.push(`from ₹${f.minPrice}`);
+   if (f.maxPrice !== "") activeTags.push(`up to ₹${f.maxPrice}`);
+   if (f.checkIn && f.checkOut) activeTags.push(`${f.checkIn} → ${f.checkOut}`);
+%>
+<form id="filterForm" method="GET" action="/listings">
+  <section class="hero">
+    <span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> Handpicked stays worldwide</span>
+    <h1>Find your next <span class="grad-text">cozy corner</span></h1>
+    <p class="lead">Handpicked homes, cabins and villas. Search by place, pick your dates and book in a few taps.</p>
 
-    .filter p{
-        font-size: 0.9rem;
-    }
-
-    .tax-info{
-        display: none;
-    }
-
-    .tax-toggle{
-        border: 1px solid black;
-        border-radius: 1rem;
-        padding: 1rem;
-        height: 3rem;
-        margin-left: 1rem;
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-</style>
-<body>
-    <!-- <h3>All listings</h3> -->
-    <!-- <form method="GET" action="/listings/new">
-        <button>
-            Create new listing
-        </button>
-    </form> -->
-    <div id="filters">
-        <div class="filter">
-            <div><i class="fa-solid fa-fire"></i></div>
-            <p>Trending</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-bed"></i></div>
-            <p>Rooms</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-mountain-city"></i></div>
-            <p>Iconic cities</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-mountain"></i></div>
-            <p>Mountains</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-brands fa-fort-awesome"></i></div>
-            <p>Castles</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-person-swimming"></i></div>
-            <p>Amazing Pools</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-campground"></i></div>
-            <p>Camping</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-cow"></i></div>
-            <p>Farms</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-regular fa-snowflake"></i></div>
-            <p>Arctic</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-umbrella-beach"></i></div>
-            <p>Beach</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-person-skiing"></i></div>
-            <p>Skiing</p>
-        </div>
-        <div class="filter">
-            <div><i class="fa-solid fa-ship"></i></div>
-            <p>Boats</p>
-        </div>
-        
-        <div class="tax-toggle">
-        <div class="form-check-reverse form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-            <label class="form-check-label" for="flexSwitchCheckDefault">Display total after taxes</label>
-          </div>
-        </div>
-    </div>    
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
-    <%for(let listing of allListing){%>
-    <a href="/listings/<%= listing._id %>" class="listing-link">
-    <div class="card col list-card" style="width: 25rem;">
-        <img src="<%=listing.image.url%>" class="card-img-top" alt="listing_image" style="height: 20rem ;">
-        <div class="card-img-overlay"></div>
-        <div class="card-body">
-            <p class="card-text">
-            <b><%=listing.title%></b><br>
-            Price : &#8377;<%= listing.price.toLocaleString('en-IN')%>/night
-            <i class="tax-info">&nbsp;+18% GST</i>
-            </p>
-        </div>
+    <div class="search-panel panel">
+      <div class="field">
+        <label for="q">Where</label>
+        <input id="q" name="q" type="text" value="<%= f.q %>" placeholder="City, country or vibe" autocomplete="off">
       </div>
+      <div class="field">
+        <label for="checkIn">Check in</label>
+        <input id="checkIn" name="checkIn" type="date" min="<%= today %>" value="<%= f.checkIn %>">
+      </div>
+      <div class="field">
+        <label for="checkOut">Check out</label>
+        <input id="checkOut" name="checkOut" type="date" min="<%= today %>" value="<%= f.checkOut %>">
+      </div>
+      <div class="field">
+        <label for="guests">Guests</label>
+        <select id="guests" name="guests">
+          <option value="">Any</option>
+          <% for (let g = 1; g <= 10; g++) { %>
+            <option value="<%= g %>" <%= Number(f.guests) === g ? "selected" : "" %>><%= g %>+</option>
+          <% } %>
+        </select>
+      </div>
+      <button class="btn btn-grad go" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    </div>
+  </section>
+
+  <div class="rail-wrap">
+    <div class="rail" role="tablist" aria-label="Categories">
+      <button type="submit" name="category" value="" class="chip <%= !f.category ? 'active' : '' %>"><i class="fa-solid fa-border-all"></i>All</button>
+      <% for (const c of categories) { %>
+        <button type="submit" name="category" value="<%= c.slug %>" class="chip <%= f.category === c.slug ? 'active' : '' %>">
+          <i class="<%= c.icon %>"></i><%= c.label %>
+        </button>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="toolbar panel">
+    <div class="grp">
+      <label class="form-label" for="minPrice">Min ₹/night</label>
+      <input class="form-control" id="minPrice" name="minPrice" type="number" min="0" step="100" value="<%= f.minPrice %>" placeholder="0">
+    </div>
+    <div class="grp">
+      <label class="form-label" for="maxPrice">Max ₹/night</label>
+      <input class="form-control" id="maxPrice" name="maxPrice" type="number" min="0" step="100" value="<%= f.maxPrice %>" placeholder="Any">
+    </div>
+    <div class="grp">
+      <label class="form-label" for="sort">Sort by</label>
+      <select class="form-select" id="sort" name="sort" data-autosubmit>
+        <option value="newest" <%= f.sort === "newest" ? "selected" : "" %>>Newest</option>
+        <option value="price_asc" <%= f.sort === "price_asc" ? "selected" : "" %>>Price: low to high</option>
+        <option value="price_desc" <%= f.sort === "price_desc" ? "selected" : "" %>>Price: high to low</option>
+        <option value="rating" <%= f.sort === "rating" ? "selected" : "" %>>Top rated</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost" type="submit"><i class="fa-solid fa-sliders me-1"></i> Apply</button>
+    <% if (activeTags.length) { %><a class="btn btn-ghost" href="/listings"><i class="fa-solid fa-rotate-left me-1"></i> Clear</a><% } %>
+    <span class="spacer"></span>
+    <span class="result-count"><b><%= allListing.length %></b> <%= allListing.length === 1 ? "stay" : "stays" %></span>
+    <label class="tax-switch"><input type="checkbox" id="taxSwitch"> Show GST</label>
+  </div>
+
+  <% if (activeTags.length) { %>
+    <div class="active-tags">
+      <% for (const t of activeTags) { %><span class="tag"><%= t %></span><% } %>
+    </div>
+  <% } %>
+</form>
+
+<% if (!allListing.length) { %>
+  <div class="empty panel reveal">
+    <div class="ico"><i class="fa-regular fa-compass"></i></div>
+    <h3>No stays match your search</h3>
+    <p>Try widening your price range, changing dates or clearing filters.</p>
+    <a class="btn btn-grad" href="/listings">Clear all filters</a>
+  </div>
+<% } else { %>
+  <div class="grid">
+    <% allListing.forEach((listing, i) => {
+         const cat = categories.find(c => c.slug === listing.category); %>
+      <a href="/listings/<%= listing._id %><%= f.checkIn && f.checkOut ? `?checkIn=${f.checkIn}&checkOut=${f.checkOut}` : "" %>" class="l-card reveal" style="--d: <%= Math.min(i % 9, 8) * 60 %>ms">
+        <div class="l-media">
+          <img src="<%= listing.image && listing.image.url %>" alt="<%= listing.title %>" loading="lazy">
+          <% if (cat) { %><span class="l-badge"><i class="<%= cat.icon %> me-1"></i><%= cat.label %></span><% } %>
+          <span class="l-rating">
+            <% if (listing.reviewCount) { %><i class="fa-solid fa-star"></i><%= listing.avgRating.toFixed(1) %> <span style="opacity:.7">(<%= listing.reviewCount %>)</span>
+            <% } else { %><i class="fa-regular fa-star"></i> New<% } %>
+          </span>
+          <span class="l-price">&#8377;<%= listing.price.toLocaleString("en-IN") %> <small>/night</small></span>
+        </div>
+        <div class="l-body">
+          <h5><%= listing.title %></h5>
+          <div class="where"><i class="fa-solid fa-location-dot"></i><%= listing.location %>, <%= listing.country %></div>
+          <div class="meta"><i class="fa-solid fa-user-group me-1"></i>Up to <%= listing.maxGuests || 4 %> guests <i class="tax-info">&nbsp;· +18% GST</i></div>
+        </div>
       </a>
-    <%}%>
-</div>
-
-<script>
-    let taxSwitch = document.getElementById("flexSwitchCheckDefault");
-    taxSwitch.addEventListener("click",()=>{
-        let taxInfo = document.getElementsByClassName("tax-info");
-        for(info of taxInfo){
-            if(info.style.display!="inline"){
-                info.style.display="inline";
-            }else{
-                info.style.display="none"
-            }
-        }
-    });
-</script>
-</body>
-
+    <% }) %>
+  </div>
+<% } %>

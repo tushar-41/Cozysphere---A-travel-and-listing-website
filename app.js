@@ -20,10 +20,13 @@ const User = require("./models/user.js");
 const reviewRouter = require("./routes/review.js");
 const listingRouter = require("./routes/listing.js");
 const userRouter = require("./routes/user.js");
+const bookingRouter = require("./routes/booking.js");
+const listingController = require("./controllers/listing.js");
+const wrapAsync = require("./utils/wrapAsync.js");
 const Listing = require("./models/listing.js");
 
-// const dbUrl = "mongodb://127.0.0.1:27017/listing";
-const dbUrl = process.env.ATLASDB_URL;
+const dbUrl = "mongodb://127.0.0.1:27017/listing";
+// const dbUrl = process.env.ATLASDB_URL;
 
 //Port
 const PORT = process.env.PORT || 8080;
@@ -91,17 +94,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/", async (req, res) => {
-  try {
-    const allListing = await Listing.find({});
-    res.render("index.ejs", { allListing });
-  } catch (error) {
-    console.log(error);
-  }
-});
+app.get("/", wrapAsync(listingController.index));
 
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
+app.use("/", bookingRouter);
 app.use("/", userRouter);
 
 app.all("*", (req, res, next) => {
